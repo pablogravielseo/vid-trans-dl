@@ -4,7 +4,7 @@ class VidTransDl < Formula
   desc "Command-line tool to download videos and transcribe their audio to text"
   homepage "https://github.com/pablogravielseo/vid-trans-dl"
   url "https://github.com/pablogravielseo/vid-trans-dl/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "0019dfc4b32d63c1392aa264aed2253c1e0c2fb09216f8e2cc269bbfb8bb49b5"
+  sha256 "a8d7dab43002b34acc647dcae335bff067831b97e09b49b846a708e04c39777f"
   license "MIT"
 
   depends_on "ffmpeg"
