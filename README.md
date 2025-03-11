@@ -7,6 +7,7 @@ A command-line tool to download videos and transcribe their audio to text using 
 - Download videos from various platforms (YouTube, Vimeo, etc.) using yt-dlp
 - Extract audio from videos
 - Transcribe audio to text using AssemblyAI (cloud-based, fast and accurate)
+- Automatic language detection (for audio with at least 50 seconds of speech)
 - Support for multiple languages
 - Customizable output location
 - Option to keep the downloaded audio file
@@ -79,12 +80,18 @@ vid-trans-dl "https://www.youtube.com/watch?v=VIDEO_ID" --assemblyai-key "YOUR_A
 ### Available Options
 
 - `-o, --output`: Output file path for the transcription (default: transcript.txt)
-- `-l, --language`: Language code for transcription (e.g., 'pt' for Portuguese, 'en' for English)
+- `-l, --language`: Language code for transcription (e.g., 'pt' for Portuguese, 'en' for English). If not specified, automatic language detection will be used by default.
 - `-k, --keep-audio`: Keep the downloaded audio file after transcription
 - `-d, --max-duration`: Maximum duration in seconds to transcribe
 - `--assemblyai-key`: AssemblyAI API key
 
 ## Usage Examples
+
+### Transcribe a YouTube video with automatic language detection
+
+```bash
+vid-trans-dl "https://www.youtube.com/watch?v=VIDEO_ID" -o transcript.txt
+```
 
 ### Transcribe a YouTube video in Portuguese
 

@@ -9,13 +9,40 @@ import tempfile
 import subprocess
 from pathlib import Path
 
+# Version information
+__version__ = "0.1.0"
+
 # Import dotenv for loading environment variables from .env.local file
 try:
     from dotenv import load_dotenv
-    # Try to load from .env.local first, then fall back to .env if it exists
-    env_loaded = load_dotenv('.env.local')
+    
+    # Possible locations for the .env.local file
+    possible_locations = [
+        os.getcwd(),  # Current directory
+        os.path.dirname(os.path.abspath(__file__)),  # Script directory
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),  # Package directory
+    ]
+    
+    env_loaded = False
+    
+    # Try to load from each possible location
+    for location in possible_locations:
+        env_file = os.path.join(location, '.env.local')
+        
+        if os.path.exists(env_file):
+            env_loaded = load_dotenv(env_file)
+            if env_loaded:
+                break
+    
+    # If .env.local not found, try .env
     if not env_loaded:
-        load_dotenv('.env')
+        for location in possible_locations:
+            env_file = os.path.join(location, '.env')
+            
+            if os.path.exists(env_file):
+                env_loaded = load_dotenv(env_file)
+                if env_loaded:
+                    break
 except ImportError:
     # dotenv is not installed, continue without it
     pass
@@ -68,14 +95,14 @@ def download_audio(url, output_path, audio_format="mp3"):
         return False
 
 
-def transcribe_with_assemblyai(audio_path, api_key, max_duration=None):
+def transcribe_with_assemblyai(audio_path, api_key, max_duration=None, language=None):
     """Transcribe audio file using AssemblyAI API."""
     print(f"Transcribing audio file with AssemblyAI: {audio_path}")
     
     try:
         import assemblyai as aai
         
-        # Check audio duration if ffmpeg is available and max_duration is specified
+        # Check audio duration if max_duration is specified
         if max_duration:
             try:
                 result = subprocess.run(
@@ -90,7 +117,6 @@ def transcribe_with_assemblyai(audio_path, api_key, max_duration=None):
                 if duration > max_duration:
                     print(f"Limiting transcription to first {max_duration} seconds of audio")
                     # Trim the audio file
-                    import tempfile
                     temp_audio = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False).name
                     subprocess.run(
                         ["ffmpeg", "-i", audio_path, "-t", str(max_duration), "-c:a", "copy", temp_audio],
@@ -108,11 +134,26 @@ def transcribe_with_assemblyai(audio_path, api_key, max_duration=None):
         # Create a transcriber
         transcriber = aai.Transcriber()
         
+        # Set up transcription config
+        if language:
+            print(f"Using specified language: {language}")
+            config = aai.TranscriptionConfig(language_code=language)
+        else:
+            print("No language specified. Using automatic language detection.")
+            print("Note: For reliable language detection, the file must contain at least 50 seconds of spoken audio.")
+            config = aai.TranscriptionConfig(language_detection=True)
+        
         print("Uploading audio to AssemblyAI (this may take a few moments)...")
-        transcript = transcriber.transcribe(audio_path)
+        
+        # Transcribe with config
+        transcript = transcriber.transcribe(audio_path, config)
         
         if transcript.status == "completed":
             print("Transcription completed successfully!")
+            
+            # If language detection was used, display the detected language
+            if not language and hasattr(transcript, 'detected_language'):
+                print(f"Detected language: {transcript.detected_language}")
             
             # Save the transcription to a file
             transcript_path = Path(audio_path).with_suffix('.txt')
@@ -139,6 +180,15 @@ def main():
     parser = argparse.ArgumentParser(
         description="Download videos and transcribe their audio to text using AssemblyAI."
     )
+    
+    # Add version argument
+    parser.add_argument(
+        "-v", "--version",
+        action="version",
+        version=f"vid-trans-dl {__version__}",
+        help="Show version information and exit"
+    )
+    
     parser.add_argument(
         "url", 
         help="URL of the video to download and transcribe"
@@ -150,7 +200,7 @@ def main():
     )
     parser.add_argument(
         "-l", "--language", 
-        help="Language code for transcription (e.g., 'pt' for Portuguese, 'en' for English)",
+        help="Language code for transcription (e.g., 'pt' for Portuguese, 'en' for English). If not specified, automatic language detection will be used by default.",
         default=None
     )
     parser.add_argument(
@@ -174,9 +224,11 @@ def main():
     
     # Check if API key is provided
     api_key = args.assemblyai_key
+    
     if not api_key:
         # Try to get API key from environment variable
         api_key = os.environ.get("ASSEMBLYAI_API_KEY")
+        
         if not api_key:
             print("Error: AssemblyAI API key is required")
             print("You can provide it with --assemblyai-key or set the ASSEMBLYAI_API_KEY environment variable")
@@ -198,7 +250,7 @@ def main():
             sys.exit(1)
         
         # Transcribe the audio
-        transcript_path = transcribe_with_assemblyai(audio_path, api_key, args.max_duration)
+        transcript_path = transcribe_with_assemblyai(audio_path, api_key, args.max_duration, args.language)
         
         if transcript_path:
             # Copy the transcript to the desired output location

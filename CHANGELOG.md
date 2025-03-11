@@ -33,10 +33,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Automatic language detection feature when no language is specified
+- Updated to use AssemblyAI API version 0.37.0
+- Improved documentation about language detection in README and Homebrew formula
+
+### Fixed
+
+- Fixed language parameter handling in AssemblyAI transcription
+
+### Changed
+
+- Made automatic language detection the default behavior when no language is specified
+- Updated help text to clarify language detection functionality
+
 ### Planned for future versions
 
 - Support for downloading playlists
 - Optional graphical interface
 - Option to export transcriptions in different formats (SRT, VTT, etc.)
-- Improvements in language detection
 - Support for automatic translation of transcriptions 

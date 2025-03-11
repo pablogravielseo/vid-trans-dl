@@ -1,7 +1,7 @@
 class VidTransDl < Formula
   include Language::Python::Virtualenv
 
-  desc "Command-line tool to download videos and transcribe their audio to text"
+  desc "Command-line tool to download videos and transcribe their audio to text with automatic language detection"
   homepage "https://github.com/pablogravielseo/vid-trans-dl"
   url "https://github.com/pablogravielseo/vid-trans-dl/archive/refs/tags/v0.1.0.tar.gz"
   sha256 "a8d7dab43002b34acc647dcae335bff067831b97e09b49b846a708e04c39777f"
@@ -15,24 +15,14 @@ class VidTransDl < Formula
     sha256 "f33ca76df2e4db31880f2fe408d44f5058d9f135015b13e50610dfbe78245bea"
   end
 
-  resource "openai-whisper" do
-    url "https://files.pythonhosted.org/packages/f5/77/952ca71515f81919bd8a6a4a3f89a27b09e73880cebf90957eda8f2f8545/openai-whisper-20240930.tar.gz"
-    sha256 "b7178e9c1615576807a300024f4daa6353f7e1a815dac5e38c33f1ef055dd2d2"
+  resource "python-dotenv" do
+    url "https://files.pythonhosted.org/packages/31/06/1ef763af20d0572c032fa22882cfbfb005fba6e7300715a37840858c919e/python-dotenv-1.0.0.tar.gz"
+    sha256 "a8df96034aae6d2d50a4ebe8216326c61c3eb64836776504fcca410e5937a3ba"
   end
 
-  resource "ffmpeg-python" do
-    url "https://files.pythonhosted.org/packages/dd/5e/d5f9105d59c1325759d838af4e973952742fc8a2b62b1c0fb3e5fbdf821a/ffmpeg_python-0.2.0.tar.gz"
-    sha256 "65225db34627c578ef0e11c8b1eb528bb35e024752f6f10b78c011f6f64c4127"
-  end
-
-  resource "future" do
-    url "https://files.pythonhosted.org/packages/a7/b2/5a7c8e2bb15a02569a7ae3e9097a2dd8a3d5d68e07aebd8a3f8a0f6b5b4c/future-1.0.0.tar.gz"
-    sha256 "bd2968309307861edae1458a4f8a893fac80aa5924b39c9c64452c5e6851b0b3"
-  end
-
-  resource "tqdm" do
-    url "https://files.pythonhosted.org/packages/62/06/d5604a70d160f6a6ca5fd2ba25597c24abd5c5ca5f437263d177ac242308/tqdm-4.66.1.tar.gz"
-    sha256 "d88e651f9db8d8551a62556d3cff9e3034274ca5d66e93197cf2490e2dcb69c7"
+  resource "assemblyai" do
+    url "https://files.pythonhosted.org/packages/b5/f7/6f9a0c0d9d2f6d0f8d8d3bd4f3c6c9a9b5c1e8a3a4c5a04f3d3d3e2a8cb3/assemblyai-0.37.0.tar.gz"
+    sha256 "4f1e57e906564baf50424a7779bbcd0b8d838c90cceb19f70ce47f294a1700f6"
   end
 
   def install
@@ -41,28 +31,25 @@ class VidTransDl < Formula
 
   def caveats
     <<~EOS
-      This tool uses OpenAI Whisper for transcription.
+      To use vid-trans-dl, you need an AssemblyAI API key.
+      You can sign up for a free API key at https://www.assemblyai.com/
 
-      The first time you run it, it will download the selected model.
-      Use the --model flag to choose a model:
-        - tiny: Fastest, least accurate (default)
-        - base: Fast, basic accuracy
-        - small: Good balance of speed and accuracy
-        - medium: More accurate but slower
-        - large: Most accurate, slowest
+      Once you have your API key, you can set it in one of the following ways:
+      1. Create a .env.local file in your current directory with:
+         ASSEMBLYAI_API_KEY=your_api_key
+      2. Set the ASSEMBLYAI_API_KEY environment variable:
+         export ASSEMBLYAI_API_KEY=your_api_key
+      3. Provide it directly when running the command:
+         vid-trans-dl --assemblyai-key your_api_key "https://www.youtube.com/watch?v=VIDEO_ID"
 
-      For long videos, you can use fast mode for quick results:
-        vid-trans-dl "https://www.youtube.com/watch?v=VIDEO_ID" --fast-mode
-
-      Or limit the duration with --max-duration:
-        vid-trans-dl "https://www.youtube.com/watch?v=VIDEO_ID" --max-duration 300
-
-      Example usage:
-        vid-trans-dl "https://www.youtube.com/watch?v=VIDEO_ID" -o transcript.txt
+      By default, vid-trans-dl will automatically detect the language of the audio.
+      For reliable language detection, the audio must contain at least 50 seconds of speech.
+      You can also specify a language with the -l option (e.g., -l pt for Portuguese).
     EOS
   end
 
   test do
-    system bin/"vid-trans-dl", "--help"
+    # Test that the command exists and can show help
+    assert_match "Download videos and transcribe their audio to text", shell_output("#{bin}/vid-trans-dl --help")
   end
 end
