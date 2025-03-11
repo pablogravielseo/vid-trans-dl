@@ -51,7 +51,10 @@ class VidTransDl < Formula
         - medium: More accurate but slower
         - large: Most accurate, slowest
 
-      For long videos, you can limit the duration with --max-duration:
+      For long videos, you can use fast mode for quick results:
+        vid-trans-dl "https://www.youtube.com/watch?v=VIDEO_ID" --fast-mode
+
+      Or limit the duration with --max-duration:
         vid-trans-dl "https://www.youtube.com/watch?v=VIDEO_ID" --max-duration 300
 
       Example usage:

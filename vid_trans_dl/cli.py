@@ -8,7 +8,17 @@ import argparse
 import tempfile
 import subprocess
 from pathlib import Path
-import whisper  # Import the whisper module directly
+
+# Import dotenv for loading environment variables from .env.local file
+try:
+    from dotenv import load_dotenv
+    # Try to load from .env.local first, then fall back to .env if it exists
+    env_loaded = load_dotenv('.env.local')
+    if not env_loaded:
+        load_dotenv('.env')
+except ImportError:
+    # dotenv is not installed, continue without it
+    pass
 
 
 def check_dependencies():
@@ -58,49 +68,76 @@ def download_audio(url, output_path, audio_format="mp3"):
         return False
 
 
-def transcribe_audio(audio_path, language=None, model="tiny"):
-    """Transcribe audio file using Whisper."""
-    print(f"Transcribing audio file: {audio_path}")
+def transcribe_with_assemblyai(audio_path, api_key, max_duration=None):
+    """Transcribe audio file using AssemblyAI API."""
+    print(f"Transcribing audio file with AssemblyAI: {audio_path}")
     
     try:
-        # Load the model
-        print(f"Loading Whisper model: {model} (this may take a while on first run)")
-        print("Downloading model if not already cached...")
-        whisper_model = whisper.load_model(model)
-        print("Model loaded successfully!")
+        import assemblyai as aai
         
-        # Set transcription options
-        options = {}
-        if language:
-            options["language"] = language
-            print(f"Using specified language: {language}")
+        # Check audio duration if ffmpeg is available and max_duration is specified
+        if max_duration:
+            try:
+                result = subprocess.run(
+                    ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", audio_path],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+                duration = float(result.stdout.strip())
+                print(f"Audio duration: {int(duration // 60)} minutes and {int(duration % 60)} seconds")
+                
+                if duration > max_duration:
+                    print(f"Limiting transcription to first {max_duration} seconds of audio")
+                    # Trim the audio file
+                    import tempfile
+                    temp_audio = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False).name
+                    subprocess.run(
+                        ["ffmpeg", "-i", audio_path, "-t", str(max_duration), "-c:a", "copy", temp_audio],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        check=True
+                    )
+                    audio_path = temp_audio
+            except Exception as e:
+                print(f"Warning: Could not determine audio duration or trim audio: {e}")
+        
+        # Configure API key
+        aai.settings.api_key = api_key
+        
+        # Create a transcriber
+        transcriber = aai.Transcriber()
+        
+        print("Uploading audio to AssemblyAI (this may take a few moments)...")
+        transcript = transcriber.transcribe(audio_path)
+        
+        if transcript.status == "completed":
+            print("Transcription completed successfully!")
+            
+            # Save the transcription to a file
+            transcript_path = Path(audio_path).with_suffix('.txt')
+            with open(transcript_path, 'w', encoding='utf-8') as f:
+                f.write(transcript.text)
+            
+            print(f"Transcription saved to: {transcript_path}")
+            return transcript_path
         else:
-            print("No language specified, Whisper will auto-detect the language")
-        
-        # Perform transcription
-        print("Starting transcription (press Ctrl+C to cancel)...")
-        result = whisper_model.transcribe(audio_path, **options)
-        print("Transcription completed successfully!")
-        
-        # Save the transcription to a file
-        transcript_path = Path(audio_path).with_suffix('.txt')
-        with open(transcript_path, 'w', encoding='utf-8') as f:
-            f.write(result["text"])
-        
-        print(f"Transcription saved to: {transcript_path}")
-        return transcript_path
-    except KeyboardInterrupt:
-        print("\nTranscription cancelled by user.")
+            print(f"Transcription failed with status: {transcript.status}")
+            if transcript.error:
+                print(f"Error: {transcript.error}")
+            return None
+    except ImportError:
+        print("Error: AssemblyAI package not installed. Install with: pip install assemblyai")
         return None
     except Exception as e:
-        print(f"Error transcribing audio: {e}")
+        print(f"Error transcribing audio with AssemblyAI: {e}")
         return None
 
 
 def main():
     """Main entry point for the CLI."""
     parser = argparse.ArgumentParser(
-        description="Download videos and transcribe their audio to text."
+        description="Download videos and transcribe their audio to text using AssemblyAI."
     )
     parser.add_argument(
         "url", 
@@ -117,28 +154,36 @@ def main():
         default=None
     )
     parser.add_argument(
-        "-m", "--model", 
-        help="Whisper model size: tiny (fastest, least accurate), base, small, medium, or large (slowest, most accurate)",
-        choices=["tiny", "base", "small", "medium", "large"],
-        default="tiny"
-    )
-    parser.add_argument(
         "-k", "--keep-audio", 
         help="Keep the downloaded audio file after transcription",
         action="store_true"
     )
+    parser.add_argument(
+        "-d", "--max-duration", 
+        help="Maximum duration in seconds to transcribe (default: transcribe entire audio)",
+        type=int,
+        default=None
+    )
+    parser.add_argument(
+        "--assemblyai-key", 
+        help="AssemblyAI API key (can also be set via ASSEMBLYAI_API_KEY environment variable or .env.local file)",
+        default=None
+    )
     
     args = parser.parse_args()
     
-    # Print model information
-    model_info = {
-        "tiny": "Fastest, least accurate (about 1GB RAM)",
-        "base": "Fast, basic accuracy (about 1GB RAM)",
-        "small": "Good balance of speed and accuracy (about 2GB RAM)",
-        "medium": "More accurate but slower (about 5GB RAM)",
-        "large": "Most accurate, slowest (about 10GB RAM)"
-    }
-    print(f"Using model: {args.model} - {model_info[args.model]}")
+    # Check if API key is provided
+    api_key = args.assemblyai_key
+    if not api_key:
+        # Try to get API key from environment variable
+        api_key = os.environ.get("ASSEMBLYAI_API_KEY")
+        if not api_key:
+            print("Error: AssemblyAI API key is required")
+            print("You can provide it with --assemblyai-key or set the ASSEMBLYAI_API_KEY environment variable")
+            print("You can also create a .env.local file with ASSEMBLYAI_API_KEY=your_key")
+            sys.exit(1)
+    
+    print("Using AssemblyAI for transcription (cloud-based service)")
     
     # Check if dependencies are installed
     check_dependencies()
@@ -153,7 +198,7 @@ def main():
             sys.exit(1)
         
         # Transcribe the audio
-        transcript_path = transcribe_audio(audio_path, args.language, args.model)
+        transcript_path = transcribe_with_assemblyai(audio_path, api_key, args.max_duration)
         
         if transcript_path:
             # Copy the transcript to the desired output location

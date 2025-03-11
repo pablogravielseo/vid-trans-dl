@@ -12,7 +12,8 @@ setup(
     packages=find_packages(),
     install_requires=[
         "yt-dlp>=2023.0.0",
-        "openai-whisper>=20230314",
+        "python-dotenv>=1.0.0",
+        "assemblyai>=0.37.0",
     ],
     entry_points={
         "console_scripts": [
