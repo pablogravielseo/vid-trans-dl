@@ -11,7 +11,7 @@ class VidTransDl < Formula
   depends_on "python@3.9"
 
   resource "yt-dlp" do
-    url "https://files.pythonhosted.org/packages/f3/3c/b9d5f5a9c1c9cca9e8b1e5701c1a9b8d2e9a8b01c4b7f7adf6c1c71a3e7/yt_dlp-2025.2.19.tar.gz"
+    url "https://files.pythonhosted.org/packages/53/36/ef300ba4a228b74612d4013b43ed303a0d6d2de17a71fc37e0b821577e0a/yt_dlp-2025.2.19.tar.gz"
     sha256 "f33ca76df2e4db31880f2fe408d44f5058d9f135015b13e50610dfbe78245bea"
   end
 
