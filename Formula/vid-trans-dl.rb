@@ -11,12 +11,12 @@ class VidTransDl < Formula
   depends_on "python@3.9"
 
   resource "yt-dlp" do
-    url "https://files.pythonhosted.org/packages/a9/a7/d8fd6c85e5ad93f99ad9ffdea7e7bc6cdc9f9da9bf58e27f38f535d14641/yt_dlp-2025.2.19-py3-none-any.whl"
-    sha256 "a1d8a4b6d3e87d3a6b3c3e9a7c8e5c3f1a5b01d3dbd11a5d7b7c2f5d7c166a08"
+    url "https://files.pythonhosted.org/packages/f3/3c/b9d5f5a9c1c9cca9e8b1e5701c1a9b8d2e9a8b01c4b7f7adf6c1c71a3e7/yt_dlp-2025.2.19.tar.gz"
+    sha256 "f33ca76df2e4db31880f2fe408d44f5058d9f135015b13e50610dfbe78245bea"
   end
 
   resource "openai-whisper" do
-    url "https://files.pythonhosted.org/packages/d0/7e/8a9c1f9b0b9c9a0c4c5c1e2c1a5e8a6d2a5d5f0a3c5c4d0a3a8c5c4d0a3a8/openai-whisper-20240930.tar.gz"
+    url "https://files.pythonhosted.org/packages/f5/77/952ca71515f81919bd8a6a4a3f89a27b09e73880cebf90957eda8f2f8545/openai-whisper-20240930.tar.gz"
     sha256 "b7178e9c1615576807a300024f4daa6353f7e1a815dac5e38c33f1ef055dd2d2"
   end
 
