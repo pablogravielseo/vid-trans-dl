@@ -8,6 +8,7 @@ import argparse
 import tempfile
 import subprocess
 from pathlib import Path
+import whisper  # Import the whisper module directly
 
 
 def check_dependencies():
@@ -57,26 +58,41 @@ def download_audio(url, output_path, audio_format="mp3"):
         return False
 
 
-def transcribe_audio(audio_path, language=None, model="small"):
+def transcribe_audio(audio_path, language=None, model="tiny"):
     """Transcribe audio file using Whisper."""
     print(f"Transcribing audio file: {audio_path}")
     
-    cmd = ["whisper", audio_path, f"--model={model}"]
-    
-    if language:
-        cmd.append(f"--language={language}")
-    
     try:
-        subprocess.run(cmd, check=True)
-        # Whisper creates a .txt file with the same name as the audio file
-        transcript_path = Path(audio_path).with_suffix('.txt')
-        if transcript_path.exists():
-            print(f"Transcription completed: {transcript_path}")
-            return transcript_path
+        # Load the model
+        print(f"Loading Whisper model: {model} (this may take a while on first run)")
+        print("Downloading model if not already cached...")
+        whisper_model = whisper.load_model(model)
+        print("Model loaded successfully!")
+        
+        # Set transcription options
+        options = {}
+        if language:
+            options["language"] = language
+            print(f"Using specified language: {language}")
         else:
-            print("Transcription completed but output file not found.")
-            return None
-    except subprocess.CalledProcessError as e:
+            print("No language specified, Whisper will auto-detect the language")
+        
+        # Perform transcription
+        print("Starting transcription (press Ctrl+C to cancel)...")
+        result = whisper_model.transcribe(audio_path, **options)
+        print("Transcription completed successfully!")
+        
+        # Save the transcription to a file
+        transcript_path = Path(audio_path).with_suffix('.txt')
+        with open(transcript_path, 'w', encoding='utf-8') as f:
+            f.write(result["text"])
+        
+        print(f"Transcription saved to: {transcript_path}")
+        return transcript_path
+    except KeyboardInterrupt:
+        print("\nTranscription cancelled by user.")
+        return None
+    except Exception as e:
         print(f"Error transcribing audio: {e}")
         return None
 
@@ -102,8 +118,9 @@ def main():
     )
     parser.add_argument(
         "-m", "--model", 
-        help="Whisper model size (tiny, base, small, medium, large)",
-        default="small"
+        help="Whisper model size: tiny (fastest, least accurate), base, small, medium, or large (slowest, most accurate)",
+        choices=["tiny", "base", "small", "medium", "large"],
+        default="tiny"
     )
     parser.add_argument(
         "-k", "--keep-audio", 
@@ -112,6 +129,16 @@ def main():
     )
     
     args = parser.parse_args()
+    
+    # Print model information
+    model_info = {
+        "tiny": "Fastest, least accurate (about 1GB RAM)",
+        "base": "Fast, basic accuracy (about 1GB RAM)",
+        "small": "Good balance of speed and accuracy (about 2GB RAM)",
+        "medium": "More accurate but slower (about 5GB RAM)",
+        "large": "Most accurate, slowest (about 10GB RAM)"
+    }
+    print(f"Using model: {args.model} - {model_info[args.model]}")
     
     # Check if dependencies are installed
     check_dependencies()
@@ -145,7 +172,7 @@ def main():
                     dst.write(src.read())
                 print(f"Audio saved to: {audio_output}")
         else:
-            print("Transcription failed.")
+            print("Transcription failed or was cancelled.")
             sys.exit(1)
 
 

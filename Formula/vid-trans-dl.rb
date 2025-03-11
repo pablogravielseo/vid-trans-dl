@@ -20,10 +20,25 @@ class VidTransDl < Formula
     sha256 "b7178e9c1615576807a300024f4daa6353f7e1a815dac5e38c33f1ef055dd2d2"
   end
 
-  # Add other dependencies as needed
-
   def install
     virtualenv_install_with_resources
+  end
+
+  def caveats
+    <<~EOS
+      This tool uses OpenAI Whisper for transcription.
+
+      The first time you run it, it will download the selected model.
+      Use the --model flag to choose a model:
+        - tiny: Fastest, least accurate (default)
+        - base: Fast, basic accuracy
+        - small: Good balance of speed and accuracy
+        - medium: More accurate but slower
+        - large: Most accurate, slowest
+
+      Example usage:
+        vid-trans-dl "https://www.youtube.com/watch?v=VIDEO_ID" -o transcript.txt
+    EOS
   end
 
   test do
