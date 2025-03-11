@@ -2,9 +2,9 @@ class VidTransDl < Formula
   include Language::Python::Virtualenv
 
   desc "Command-line tool to download videos and transcribe their audio to text"
-  homepage "https://github.com/yourusername/vid-trans-dl"
-  url "https://github.com/yourusername/vid-trans-dl/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "REPLACE_WITH_ACTUAL_SHA256_AFTER_RELEASE"
+  homepage "https://github.com/pablogravielseo/vid-trans-dl"
+  url "https://github.com/pablogravielseo/vid-trans-dl/archive/refs/tags/v0.1.0.tar.gz"
+  sha256 "0019dfc4b32d63c1392aa264aed2253c1e0c2fb09216f8e2cc269bbfb8bb49b5"
   license "MIT"
 
   depends_on "ffmpeg"
@@ -17,7 +17,7 @@ class VidTransDl < Formula
 
   resource "openai-whisper" do
     url "https://files.pythonhosted.org/packages/d0/7e/8a9c1f9b0b9c9a0c4c5c1e2c1a5e8a6d2a5d5f0a3c5c4d0a3a8c5c4d0a3a8/openai-whisper-20240930.tar.gz"
-    sha256 "REPLACE_WITH_ACTUAL_SHA256"
+    sha256 "b7178e9c1615576807a300024f4daa6353f7e1a815dac5e38c33f1ef055dd2d2"
   end
 
   # Add other dependencies as needed

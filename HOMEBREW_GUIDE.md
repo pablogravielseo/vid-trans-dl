@@ -22,7 +22,7 @@ After creating a release on GitHub, you need to calculate the SHA256 hash of the
 
 ```bash
 # Replace with your actual GitHub username and release version
-curl -L https://github.com/yourusername/vid-trans-dl/archive/refs/tags/v0.1.0.tar.gz | shasum -a 256
+curl -L https://github.com/pablogravielseo/vid-trans-dl/archive/refs/tags/v0.1.0.tar.gz | shasum -a 256
 ```
 
 ## Step 3: Update the Formula
@@ -36,13 +36,13 @@ curl -L https://github.com/yourusername/vid-trans-dl/archive/refs/tags/v0.1.0.ta
 
 ```bash
 # Create a directory for your tap
-mkdir -p $(brew --repo)/Library/Taps/yourusername/homebrew-tools
+mkdir -p $(brew --repo)/Library/Taps/pablogravielseo/homebrew-tools
 
 # Copy your formula to the tap
-cp Formula/vid-trans-dl.rb $(brew --repo)/Library/Taps/yourusername/homebrew-tools/
+cp Formula/vid-trans-dl.rb $(brew --repo)/Library/Taps/pablogravielseo/homebrew-tools/
 
 # Install the formula
-brew install --build-from-source yourusername/tools/vid-trans-dl
+brew install --build-from-source pablogravielseo/tools/vid-trans-dl
 ```
 
 ## Step 5: Create a Homebrew Tap Repository
@@ -57,7 +57,7 @@ cd homebrew-tools
 git init
 git add .
 git commit -m "Add vid-trans-dl formula"
-git remote add origin https://github.com/yourusername/homebrew-tools.git
+git remote add origin https://github.com/pablogravielseo/homebrew-tools.git
 git push -u origin main
 ```
 
@@ -66,7 +66,7 @@ git push -u origin main
 Now users can install your package using:
 
 ```bash
-brew tap yourusername/tools
+brew tap pablogravielseo/tools
 brew install vid-trans-dl
 ```
 

@@ -25,7 +25,7 @@ A command-line tool to download videos and transcribe their audio to text.
 The easiest way to install on macOS is using Homebrew:
 
 ```bash
-brew tap yourusername/tools
+brew tap pablogravielseo/tools
 brew install vid-trans-dl
 ```
 
@@ -48,7 +48,7 @@ choco install ffmpeg
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/vid-trans-dl.git
+git clone https://github.com/pablogravielseo/vid-trans-dl.git
 cd vid-trans-dl
 
 # Install the package globally
@@ -161,4 +161,4 @@ pip install openai-whisper
 
 ## License
 
-MIT 
+MIT
