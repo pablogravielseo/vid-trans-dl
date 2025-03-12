@@ -21,8 +21,8 @@ class VidTransDl < Formula
   end
 
   resource "assemblyai" do
-    url "https://files.pythonhosted.org/packages/b5/f7/6f9a0c0d9d2f6d0f8d8d3bd4f3c6c9a9b5c1e8a3a4c5a04f3d3d3e2a8cb3/assemblyai-0.37.0.tar.gz"
-    sha256 "4f1e57e906564baf50424a7779bbcd0b8d838c90cceb19f70ce47f294a1700f6"
+    url "https://files.pythonhosted.org/packages/11/1a/57f377c81a0801c2282328c4f9a4d0071407564f41200b22a8bbd3b76c93/assemblyai-0.37.0-py3-none-any.whl"
+    sha256 "52b111ba75eb6175b617c7ccec05cfef086fe30c24d5d998071eb2c99fc59f39"
   end
 
   def install
